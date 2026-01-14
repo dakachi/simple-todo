@@ -2,7 +2,14 @@
 
 @theme {
   --color-primary: #ee8c2b;
-  --color-background-light: #f8f7f6;
+  --color-accent: #154EC1;
+  /* Light mode colors */
+  --color-background-light: #F4F8FA;
+  --color-background-card: #FFFFFF;
+  --color-text-main: #262824;
+  --color-text-secondary: #7F828B;
+  --color-border-soft: #DEE5F2;
+  /* Dark mode colors */
   --color-background-dark: #0f172a;
   --color-card-dark: #1e293b;
   --color-sidebar-dark: #020617;
@@ -20,13 +27,18 @@
 /* Global Reset & Base Styles */
 @layer base {
   html, body {
-    @apply antialiased text-slate-900 dark:text-slate-100;
+    @apply antialiased;
     font-family: "Inter", sans-serif;
+  }
+  
+  html.light body {
     background-color: var(--color-background-light);
+    color: var(--color-text-main);
   }
   
   html.dark body {
     background-color: var(--color-background-dark);
+    @apply text-slate-100;
   }
 
   #app {
@@ -34,6 +46,11 @@
     width: 100vw;
     overflow: hidden;
   }
+}
+
+/* Sidebar shadow for light mode */
+.sidebar-shadow {
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
 }
 
 /* Material Symbols Rendering */

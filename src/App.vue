@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased h-screen overflow-hidden">
+  <div class="bg-background-light dark:bg-background-dark font-display text-text-main dark:text-slate-100 antialiased h-screen overflow-hidden">
     <div class="flex h-full w-full">
       <CategorySidebar />
 
@@ -9,22 +9,22 @@
           <!-- PageHeading -->
           <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div class="flex flex-col gap-1">
-              <h2 class="text-slate-900 dark:text-white text-4xl font-black leading-tight tracking-tight">
+              <h2 class="text-text-main dark:text-white text-4xl font-black leading-tight tracking-tight">
                 Today, {{ currentDateFormatted }}
               </h2>
               <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary text-sm">task_alt</span>
-                <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">
+                <p class="text-text-secondary dark:text-slate-400 text-sm font-medium">
                   {{ store.todayTaskCount }} tasks remaining for today
                 </p>
               </div>
             </div>
 
-            <div class="flex items-center gap-2 bg-card-dark/50 p-1 rounded-lg border border-slate-800">
-              <button class="p-2 text-slate-400 hover:text-white transition-colors">
+            <div class="flex items-center gap-2 bg-background-card dark:bg-card-dark/50 p-1 rounded-lg border border-border-soft dark:border-slate-800">
+              <button class="p-2 text-text-secondary dark:text-slate-400 hover:text-text-main dark:hover:text-white transition-colors">
                 <span class="material-symbols-outlined">grid_view</span>
               </button>
-              <button class="p-2 bg-slate-700 text-white rounded shadow-sm">
+              <button class="p-2 bg-accent/10 dark:bg-slate-700 text-accent dark:text-white rounded shadow-sm">
                 <span class="material-symbols-outlined">list</span>
               </button>
             </div>
@@ -38,8 +38,8 @@
 
           <!-- Empty State (kept, but styled to stay subtle) -->
           <div v-if="store.filteredTasks.length === 0" class="text-center py-16">
-            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">{{ emptyStateTitle }}</p>
-            <p class="text-slate-500/80 dark:text-slate-400/80 text-sm mt-2">{{ emptyStateMessage }}</p>
+            <p class="text-text-secondary dark:text-slate-400 text-sm font-medium">{{ emptyStateTitle }}</p>
+            <p class="text-text-secondary/80 dark:text-slate-400/80 text-sm mt-2">{{ emptyStateMessage }}</p>
           </div>
 
           <!-- Grouped Task List -->
@@ -53,7 +53,7 @@
                     :class="categoryDotClass(categoryId)"
                     :style="categoryDotStyle(categoryId)"
                   ></span>
-                  <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">
+                  <h3 class="text-sm font-bold text-text-secondary dark:text-slate-400 uppercase tracking-widest">
                     {{ getCategoryName(categoryId) }}
                   </h3>
                 </div>
@@ -68,7 +68,7 @@
               <section v-for="[date, tasks] in store.tasksGroupedByDate" :key="date">
                 <div class="flex items-center gap-3 mb-4">
                   <span class="w-3 h-3 rounded-full bg-slate-500"></span>
-                  <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">
+                  <h3 class="text-sm font-bold text-text-secondary dark:text-slate-400 uppercase tracking-widest">
                     {{ formatDate(date) }}
                   </h3>
                 </div>

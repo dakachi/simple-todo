@@ -1,8 +1,8 @@
 <template>
   <!-- Match sample Task Row markup/classes -->
-  <div class="task-row flex items-center justify-between p-4 bg-white dark:bg-card-dark/40 border border-slate-200 dark:border-slate-800/50 rounded-xl hover:border-primary/30 hover:bg-white dark:hover:bg-card-dark transition-all group cursor-default">
+  <div class="task-row flex items-center justify-between p-4 bg-background-card dark:bg-card-dark/40 border border-border-soft dark:border-slate-800/50 rounded-xl hover:border-accent/30 dark:hover:border-primary/30 hover:bg-background-card dark:hover:bg-card-dark transition-all group cursor-default">
     <div class="flex items-center gap-4">
-      <div class="relative flex items-center justify-center w-6 h-6 rounded-md border-2 border-slate-300 dark:border-slate-700 group-hover:border-primary transition-colors cursor-pointer">
+      <div class="relative flex items-center justify-center w-6 h-6 rounded-md border-2 border-accent/30 dark:border-slate-700 group-hover:border-accent dark:group-hover:border-primary transition-colors cursor-pointer">
         <input 
           type="checkbox" 
           :checked="task.done"
@@ -18,7 +18,7 @@
           ref="editInputRef"
           v-model="editTitle"
           type="text"
-          class="bg-transparent border-none focus:ring-0 p-0 text-slate-900 dark:text-slate-100 font-medium text-base"
+          class="bg-transparent border-none focus:ring-0 p-0 text-text-main dark:text-slate-100 font-medium text-base"
           @keydown.enter="saveEdit"
           @keydown.escape="cancelEdit"
           @blur="saveEdit"
@@ -28,7 +28,7 @@
           @dblclick="startEdit"
           :class="[
             'font-medium',
-            task.done ? 'text-slate-400 line-through' : 'text-slate-900 dark:text-slate-100'
+            task.done ? 'text-text-secondary line-through' : 'text-text-main dark:text-slate-100'
           ]"
         >
           {{ task.title }}
@@ -44,13 +44,13 @@
           </span>
           
           <!-- Match sample secondary meta chip (schedule) in Today view -->
-          <span v-if="store.filter.tab === 'today'" class="flex items-center gap-1 text-[10px] text-slate-500 font-medium">
+          <span v-if="store.filter.tab === 'today'" class="flex items-center gap-1 text-[10px] text-text-secondary dark:text-slate-500 font-medium">
             <span class="material-symbols-outlined text-[12px]">schedule</span>
             {{ updatedTime }}
           </span>
 
           <!-- Otherwise show due date when not today -->
-          <span v-else-if="!isToday(task.dueDate)" class="flex items-center gap-1 text-[10px] text-slate-500 font-medium">
+          <span v-else-if="!isToday(task.dueDate)" class="flex items-center gap-1 text-[10px] text-text-secondary dark:text-slate-500 font-medium">
             <span class="material-symbols-outlined text-[12px]">calendar_today</span>
             {{ formatDate(task.dueDate) }}
           </span>
@@ -62,14 +62,14 @@
       <button 
         v-if="!isEditing"
         @click="startEdit"
-        class="p-2 text-slate-400 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+        class="p-2 text-text-secondary dark:text-slate-400 hover:text-primary hover:bg-background-light dark:hover:bg-slate-800 rounded-lg transition-colors"
         title="Edit"
       >
         <span class="material-symbols-outlined text-[20px]">edit</span>
       </button>
       
       <button 
-        class="p-2 text-slate-400 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+        class="p-2 text-text-secondary dark:text-slate-400 hover:text-primary hover:bg-background-light dark:hover:bg-slate-800 rounded-lg transition-colors"
         title="Pin"
       >
         <span class="material-symbols-outlined text-[20px]">push_pin</span>

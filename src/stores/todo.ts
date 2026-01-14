@@ -237,6 +237,8 @@ export const useTodoStore = defineStore('todo', () => {
   function toggleDarkMode() {
     settings.value.darkMode = !settings.value.darkMode
     saveSettings(settings.value)
+    // Force update by triggering reactivity
+    settings.value = { ...settings.value }
   }
 
   function setLastUsedCategory(categoryId: string | null) {

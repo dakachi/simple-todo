@@ -1,18 +1,18 @@
 <template>
   <div class="mb-10">
-    <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl focus-within:ring-2 focus-within:ring-primary/50 transition-all">
+    <div class="bg-background-card dark:bg-card-dark border border-border-soft dark:border-slate-800 rounded-xl shadow-xl focus-within:ring-2 focus-within:ring-primary/50 transition-all">
       <div class="flex items-start p-4 gap-4">
-        <div class="mt-2 h-10 w-10 shrink-0 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700 flex items-center justify-center">
-          <span class="material-symbols-outlined text-slate-500">person</span>
+        <div class="mt-2 h-10 w-10 shrink-0 bg-background-light dark:bg-slate-800 rounded-full overflow-hidden border border-border-soft dark:border-slate-700 flex items-center justify-center">
+          <span class="material-symbols-outlined text-text-secondary dark:text-slate-500">person</span>
         </div>
         
         <div class="flex-1 flex flex-col">
           <textarea 
             ref="inputRef"
             v-model="title" 
-            class="w-full bg-transparent border-none focus:ring-0 p-0 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 text-lg font-medium resize-none h-12 pt-1"
+            class="w-full bg-transparent border-none focus:ring-0 p-0 text-text-main dark:text-white placeholder:text-text-secondary dark:placeholder:text-slate-600 text-lg font-medium resize-none h-12 pt-1"
             placeholder="What's on your mind?"
-            @keydown.enter.prevent="handleAdd"
+            @keydown.enter="handleEnter"
             @keydown.escape="handleEscape"
           ></textarea>
           
@@ -23,7 +23,7 @@
                   type="button"
                   @click="toggleCategoryPicker"
                   @mousedown.stop
-                  class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                  class="flex items-center gap-1.5 px-3 py-1.5 bg-background-light dark:bg-slate-800 rounded-lg text-text-secondary dark:text-slate-400 hover:bg-background-light/80 dark:hover:bg-slate-700 transition-colors"
                 >
                   <span class="material-symbols-outlined text-sm">label</span>
                   <span class="text-xs font-bold uppercase tracking-wider">
@@ -35,12 +35,12 @@
                 <div 
                   v-if="showCategoryPicker"
                   @click.stop
-                  class="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl z-[100] py-2"
+                  class="absolute top-full left-0 mt-2 w-48 bg-background-card dark:bg-card-dark border border-border-soft dark:border-slate-800 rounded-lg shadow-xl z-[100] py-2"
                 >
                     <button
                       type="button"
                       @click.stop="selectCategory(null)"
-                      class="w-full flex items-center gap-3 px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      class="w-full flex items-center gap-3 px-4 py-2 text-left text-sm text-text-main dark:text-slate-300 hover:bg-background-light dark:hover:bg-slate-800 transition-colors"
                     >
                       <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
                       <span>No category</span>
@@ -50,7 +50,7 @@
                       :key="cat.id"
                       type="button"
                       @click.stop="selectCategory(cat.id)"
-                      class="w-full flex items-center gap-3 px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      class="w-full flex items-center gap-3 px-4 py-2 text-left text-sm text-text-main dark:text-slate-300 hover:bg-background-light dark:hover:bg-slate-800 transition-colors"
                     >
                       <span class="w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: cat.color }"></span>
                       <span>{{ cat.name }}</span>
@@ -58,11 +58,11 @@
                   </div>
               </div>
               
-              <button class="p-1.5 text-slate-400 hover:text-primary transition-colors">
+              <button class="p-1.5 text-text-secondary dark:text-slate-400 hover:text-primary transition-colors">
                 <span class="material-symbols-outlined text-lg">calendar_month</span>
               </button>
               
-              <button class="p-1.5 text-slate-400 hover:text-primary transition-colors">
+              <button class="p-1.5 text-text-secondary dark:text-slate-400 hover:text-primary transition-colors">
                 <span class="material-symbols-outlined text-lg">flag</span>
               </button>
             </div>
@@ -92,6 +92,7 @@ const selectedCategoryId = ref<string | null>(store.settings.lastUsedCategoryId)
 const inputRef = ref<HTMLTextAreaElement>()
 const categoryPickerRef = ref<HTMLDivElement>()
 const showCategoryPicker = ref(false)
+const isAdding = ref(false)
 
 // Watch for changes to lastUsedCategoryId from sidebar selection
 watch(() => store.settings.lastUsedCategoryId, (newCategoryId) => {
@@ -113,19 +114,52 @@ function selectCategory(categoryId: string | null) {
   showCategoryPicker.value = false
 }
 
-function handleAdd() {
-  if (!title.value.trim()) return
+function handleEnter(event: KeyboardEvent) {
+  // Allow Shift+Enter for new lines
+  if (event.shiftKey) {
+    return
+  }
+  
+  // Prevent default (newline) and stop propagation
+  event.preventDefault()
+  event.stopPropagation()
+  
+  // Get the value directly from the textarea to ensure we have the latest
+  const textarea = event.target as HTMLTextAreaElement
+  const taskTitle = textarea.value.trim()
+  
+  // Add task with the value from the textarea
+  handleAdd(taskTitle)
+}
+
+function handleAdd(taskTitle?: string) {
+  // Use provided title or fall back to v-model value
+  const finalTitle = taskTitle !== undefined ? taskTitle : title.value.trim()
+  
+  // Prevent double submission
+  if (isAdding.value || !finalTitle) return
+  
+  isAdding.value = true
   
   // Pass the selected category (can be null for "No category")
-  store.addTask(title.value, selectedCategoryId.value, getTodayString())
+  store.addTask(finalTitle, selectedCategoryId.value, getTodayString())
   
   // Clear only the title, keep the selected category for next task
   title.value = ''
+  // Also clear the textarea directly to ensure it's cleared
+  if (inputRef.value) {
+    inputRef.value.value = ''
+  }
   
   // Update last used category in settings (only if a category was selected)
   if (selectedCategoryId.value) {
     store.setLastUsedCategory(selectedCategoryId.value)
   }
+  
+  // Reset flag after a short delay
+  setTimeout(() => {
+    isAdding.value = false
+  }, 100)
 }
 
 function handleEscape() {

@@ -1,16 +1,16 @@
 <template>
   <!-- Match sample SideNavBar markup/classes -->
-  <aside class="w-64 flex flex-col bg-sidebar-dark border-r border-slate-800 shrink-0">
+  <aside class="w-64 flex flex-col bg-background-card dark:bg-sidebar-dark border-r border-border-soft dark:border-slate-800 shrink-0 sidebar-shadow">
     <div class="p-6 flex flex-col h-full">
       <!-- Brand & Global Count -->
       <div class="mb-8">
         <div class="flex items-center gap-2 mb-1">
           <span class="material-symbols-outlined text-primary text-3xl">check_circle</span>
-          <h1 class="text-white text-xl font-bold tracking-tight">Starporter.dev</h1>
+          <h1 class="text-text-main dark:text-white text-xl font-bold tracking-tight">Starporter.dev</h1>
         </div>
         <div class="flex items-center gap-2 px-1">
           <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-          <p class="text-slate-400 text-xs font-medium uppercase tracking-wider">
+          <p class="text-text-secondary dark:text-slate-400 text-xs font-medium uppercase tracking-wider">
             {{ store.todayTaskCount }} {{ store.todayTaskCount === 1 ? 'task' : 'tasks' }} remaining
           </p>
         </div>
@@ -21,8 +21,8 @@
         <div
           class="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors"
           :class="store.filter.tab === 'today'
-            ? 'bg-primary/10 text-primary border border-primary/20'
-            : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'"
+            ? 'bg-accent/10 dark:bg-primary/10 text-accent dark:text-primary border border-accent/20 dark:border-primary/20'
+            : 'text-text-secondary dark:text-slate-400 hover:bg-background-light dark:hover:bg-slate-800/50 hover:text-text-main dark:hover:text-white'"
           @click="store.setFilterTab('today')"
         >
           <span class="material-symbols-outlined text-[22px]">calendar_today</span>
@@ -31,8 +31,8 @@
         <div
           class="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors"
           :class="store.filter.tab === 'all'
-            ? 'bg-primary/10 text-primary border border-primary/20'
-            : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'"
+            ? 'bg-accent/10 dark:bg-primary/10 text-accent dark:text-primary border border-accent/20 dark:border-primary/20'
+            : 'text-text-secondary dark:text-slate-400 hover:bg-background-light dark:hover:bg-slate-800/50 hover:text-text-main dark:hover:text-white'"
           @click="store.setFilterTab('all')"
         >
           <span class="material-symbols-outlined text-[22px]">upcoming</span>
@@ -41,8 +41,8 @@
         <div
           class="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors"
           :class="store.filter.tab === 'done'
-            ? 'bg-primary/10 text-primary border border-primary/20'
-            : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'"
+            ? 'bg-accent/10 dark:bg-primary/10 text-accent dark:text-primary border border-accent/20 dark:border-primary/20'
+            : 'text-text-secondary dark:text-slate-400 hover:bg-background-light dark:hover:bg-slate-800/50 hover:text-text-main dark:hover:text-white'"
           @click="store.setFilterTab('done')"
         >
           <span class="material-symbols-outlined text-[22px]">inventory_2</span>
@@ -52,12 +52,12 @@
 
       <!-- Categories -->
       <div class="flex flex-col gap-2">
-        <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Categories</p>
+        <p class="px-3 text-[10px] font-bold text-text-secondary dark:text-slate-500 uppercase tracking-widest mb-1">Categories</p>
 
         <div
           v-for="cat in store.categories"
           :key="cat.id"
-          class="flex items-center justify-between px-3 py-2 group cursor-pointer hover:bg-slate-800/30 rounded-lg"
+          class="flex items-center justify-between px-3 py-2 group cursor-pointer hover:bg-background-light dark:hover:bg-slate-800/30 rounded-lg"
           @click="selectCategoryForTask(cat.id)"
         >
           <div class="flex items-center gap-3">
@@ -66,23 +66,23 @@
               :class="categoryDotClass(cat.color)"
               :style="categoryDotStyle(cat.color)"
             ></span>
-            <p class="text-slate-300 text-sm font-medium">{{ cat.name }}</p>
+            <p class="text-text-main dark:text-slate-300 text-sm font-medium">{{ cat.name }}</p>
           </div>
-          <span class="text-[10px] text-slate-600 font-bold group-hover:text-slate-400">{{ getCategoryCount(cat.id) }}</span>
+          <span class="text-[10px] text-text-secondary dark:text-slate-600 font-bold group-hover:text-text-secondary/80 dark:group-hover:text-slate-400">{{ getCategoryCount(cat.id) }}</span>
         </div>
       </div>
 
       <!-- Footer Actions -->
       <div class="mt-auto pt-6 flex flex-col gap-3">
         <button
-          class="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 bg-slate-800 text-white text-sm font-bold hover:bg-slate-700 transition-colors"
+          class="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 bg-primary dark:bg-slate-800 text-white text-sm font-bold hover:opacity-90 dark:hover:bg-slate-700 transition-colors shadow-sm"
           @click="showNewCategoryForm = true"
         >
           <span class="material-symbols-outlined text-sm">add</span>
           <span>New Category</span>
         </button>
 
-        <div class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-white cursor-pointer" @click="showSettings = true">
+        <div class="flex items-center gap-3 px-3 py-2 text-text-secondary dark:text-slate-400 hover:text-text-main dark:hover:text-white cursor-pointer" @click="showSettings = true">
           <span class="material-symbols-outlined text-[20px]">settings</span>
           <p class="text-sm font-medium">Settings</p>
         </div>
@@ -117,7 +117,7 @@
             <span class="text-sm font-semibold">Import JSON</span>
             <span class="material-symbols-outlined text-slate-400">upload</span>
           </button>
-          <button class="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-white/70 dark:bg-background-dark/50 border border-slate-200 dark:border-slate-700 hover:border-primary/40 transition-colors" @click="store.toggleDarkMode">
+          <button class="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-white/70 dark:bg-background-dark/50 border border-slate-200 dark:border-slate-700 hover:border-primary/40 transition-colors" @click="handleToggleTheme">
             <span class="text-sm font-semibold">{{ store.settings.darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode' }}</span>
             <span class="material-symbols-outlined text-slate-400">{{ store.settings.darkMode ? 'light_mode' : 'dark_mode' }}</span>
           </button>
@@ -407,6 +407,20 @@ function selectCategoryForTask(categoryId: string) {
   store.setFilterCategory(categoryId)
   // Also select this category for task creation
   store.setLastUsedCategory(categoryId)
+}
+
+function handleToggleTheme() {
+  store.toggleDarkMode()
+  // Apply theme immediately
+  const htmlElement = document.documentElement
+  const isDark = store.settings.darkMode
+  if (isDark) {
+    htmlElement.classList.add('dark')
+    htmlElement.classList.remove('light')
+  } else {
+    htmlElement.classList.remove('dark')
+    htmlElement.classList.add('light')
+  }
 }
 
 function closeNewCategoryForm() {
