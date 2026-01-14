@@ -1,4 +1,4 @@
-# Netlyze Todo
+# Starporter Todo
 
 A fast, beautiful, and fully functional todo app for managing your daily tasks. Built with Vue 3, TypeScript, and Vite. All data is stored locally in your browser.
 
