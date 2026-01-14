@@ -341,7 +341,7 @@
 import { ref, computed, nextTick } from 'vue'
 import type { Category } from '@/types'
 import { useTodoStore } from '@/stores/todo'
-import { exportData, importData } from '@/utils/storage'
+import { exportData, importData, saveSettings } from '@/utils/storage'
 
 const store = useTodoStore()
 
@@ -410,17 +410,27 @@ function selectCategoryForTask(categoryId: string) {
 }
 
 function handleToggleTheme() {
-  store.toggleDarkMode()
-  // Apply theme immediately
+  // Get current value and calculate new value
+  const currentDarkMode = store.settings.darkMode
+  const newDarkMode = !currentDarkMode
+  
+  // Apply theme to HTML element FIRST - synchronously, immediately
+  // For Tailwind v4, we only need the 'dark' class (no 'light' class needed)
   const htmlElement = document.documentElement
-  const isDark = store.settings.darkMode
-  if (isDark) {
+  if (newDarkMode) {
     htmlElement.classList.add('dark')
-    htmlElement.classList.remove('light')
   } else {
     htmlElement.classList.remove('dark')
-    htmlElement.classList.add('light')
   }
+  
+  // Update store - create new object to ensure reactivity
+  const updatedSettings = {
+    ...store.settings,
+    darkMode: newDarkMode
+  }
+  store.settings = updatedSettings
+  // Save to localStorage
+  saveSettings(updatedSettings)
 }
 
 function closeNewCategoryForm() {

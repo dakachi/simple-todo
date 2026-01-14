@@ -235,10 +235,13 @@ export const useTodoStore = defineStore('todo', () => {
 
   // Actions - Settings
   function toggleDarkMode() {
-    settings.value.darkMode = !settings.value.darkMode
+    const newDarkMode = !settings.value.darkMode
+    // Create a new object to ensure reactivity
+    settings.value = {
+      ...settings.value,
+      darkMode: newDarkMode
+    }
     saveSettings(settings.value)
-    // Force update by triggering reactivity
-    settings.value = { ...settings.value }
   }
 
   function setLastUsedCategory(categoryId: string | null) {

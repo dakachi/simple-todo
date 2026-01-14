@@ -14,25 +14,24 @@ const store = useTodoStore()
 const htmlElement = document.documentElement
 
 function applyTheme(isDark: boolean) {
+  // For Tailwind v4, we only need the 'dark' class
+  // When it's not dark, we remove the class (defaults to light)
   if (isDark) {
     htmlElement.classList.add('dark')
-    htmlElement.classList.remove('light')
   } else {
     htmlElement.classList.remove('dark')
-    htmlElement.classList.add('light')
   }
 }
 
-// Apply initial theme
-applyTheme(store.settings.darkMode)
+// Apply initial theme immediately - default to light mode
+const initialDarkMode = store.settings.darkMode ?? false
+applyTheme(initialDarkMode)
 
-// Watch for theme changes - subscribe to store mutations
-// This will fire whenever the store state changes
+// Subscribe to store changes - this will fire when settings.darkMode changes
 store.$subscribe((mutation, state) => {
-  // Apply theme whenever settings change
   applyTheme(state.settings.darkMode)
 }, { 
-  detached: true 
+  detached: true
 })
 
 app.mount('#app')

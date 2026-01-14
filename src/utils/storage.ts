@@ -90,14 +90,15 @@ export function saveCategories(categories: Category[], immediate = false): void 
 export function loadSettings(): Settings {
   const defaultSettings: Settings = {
     lastUsedCategoryId: null,
-    darkMode: false
+    darkMode: false // Default to light mode
   }
   
   const settings = safeJSONParse<Settings>(SETTINGS_KEY, defaultSettings)
   
+  // Ensure darkMode defaults to false (light mode) if not set
   return {
     lastUsedCategoryId: settings.lastUsedCategoryId || null,
-    darkMode: settings.darkMode || false
+    darkMode: settings.darkMode !== undefined ? settings.darkMode : false
   }
 }
 

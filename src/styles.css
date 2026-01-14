@@ -24,6 +24,9 @@
   --radius-full: 9999px;
 }
 
+/* Configure dark mode for Tailwind v4 */
+@custom-variant dark (&:is(.dark, .dark *));
+
 /* Global Reset & Base Styles */
 @layer base {
   html, body {
