@@ -1,82 +1,84 @@
 <template>
-  <div class="app" :class="{ 'dark-mode': store.settings.darkMode }">
+  <div class="flex h-screen w-full bg-background-light dark:bg-background-dark font-display overflow-hidden">
     <CategorySidebar />
     
-    <main class="main-content">
-      <div class="container">
-        <TaskComposer ref="composerRef" />
+    <main class="flex-1 overflow-y-auto">
+      <div class="max-w-4xl mx-auto px-8 py-10">
+        <!-- Page Heading -->
+        <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+          <div class="flex flex-col gap-1">
+            <h2 class="text-slate-900 dark:text-white text-4xl font-black leading-tight tracking-tight">
+              Today, {{ currentDateFormatted }}
+            </h2>
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-sm">task_alt</span>
+              <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">
+                {{ store.todayTaskCount }} {{ store.todayTaskCount === 1 ? 'task' : 'tasks' }} remaining for today
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 bg-card-dark/50 p-1 rounded-lg border border-slate-800">
+            <button class="p-2 text-slate-400 hover:text-white transition-colors">
+              <span class="material-symbols-outlined">grid_view</span>
+            </button>
+            <button class="p-2 bg-slate-700 text-white rounded shadow-sm">
+              <span class="material-symbols-outlined">list</span>
+            </button>
+          </div>
+        </div>
+        
+        <TaskComposer />
         
         <FiltersBar />
         
-        <div v-if="store.filteredTasks.length === 0" class="empty-state">
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 11l3 3L22 4"></path>
-            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-          </svg>
-          <h2>{{ emptyStateTitle }}</h2>
-          <p>{{ emptyStateMessage }}</p>
+        <!-- Empty State -->
+        <div v-if="store.filteredTasks.length === 0" class="text-center py-20">
+          <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
+            <span class="material-symbols-outlined text-slate-400 text-3xl">check_circle</span>
+          </div>
+          <h3 class="text-slate-900 dark:text-white text-xl font-bold mb-2">{{ emptyStateTitle }}</h3>
+          <p class="text-slate-500 dark:text-slate-400">{{ emptyStateMessage }}</p>
         </div>
         
-        <div v-else class="task-list">
+        <!-- Grouped Task List -->
+        <div v-else class="space-y-10">
           <!-- Today view: group by category -->
           <template v-if="store.filter.tab === 'today'">
-            <div 
-              v-for="[categoryId, tasks] in store.tasksGroupedByCategory" 
-              :key="categoryId"
-              class="task-group"
-            >
-              <div class="group-header">
-                <span class="group-title">
-                  <span 
-                    v-if="categoryId !== 'uncategorized'"
-                    class="category-dot" 
-                    :style="{ backgroundColor: getCategoryColor(categoryId) }"
-                  ></span>
+            <section v-for="[categoryId, tasks] in store.tasksGroupedByCategory" :key="categoryId">
+              <div class="flex items-center gap-3 mb-4">
+                <span 
+                  class="w-3 h-3 rounded-full" 
+                  :style="{ backgroundColor: getCategoryColor(categoryId) }"
+                ></span>
+                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">
                   {{ getCategoryName(categoryId) }}
-                </span>
-                <span class="group-count">{{ tasks.length }}</span>
+                </h3>
               </div>
-              
-              <div class="group-tasks">
-                <TaskItem 
-                  v-for="task in tasks" 
-                  :key="task.id" 
-                  :task="task"
-                />
+              <div class="space-y-3">
+                <TaskItem v-for="task in tasks" :key="task.id" :task="task" />
               </div>
-            </div>
+            </section>
           </template>
           
           <!-- All view: group by date -->
           <template v-else-if="store.filter.tab === 'all'">
-            <div 
-              v-for="[date, tasks] in store.tasksGroupedByDate" 
-              :key="date"
-              class="task-group"
-            >
-              <div class="group-header">
-                <span class="group-title">{{ formatDate(date) }}</span>
-                <span class="group-count">{{ tasks.length }}</span>
+            <section v-for="[date, tasks] in store.tasksGroupedByDate" :key="date">
+              <div class="flex items-center gap-3 mb-4">
+                <span class="material-symbols-outlined text-slate-400">calendar_today</span>
+                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">
+                  {{ formatDate(date) }}
+                </h3>
               </div>
-              
-              <div class="group-tasks">
-                <TaskItem 
-                  v-for="task in tasks" 
-                  :key="task.id" 
-                  :task="task"
-                />
+              <div class="space-y-3">
+                <TaskItem v-for="task in tasks" :key="task.id" :task="task" />
               </div>
-            </div>
+            </section>
           </template>
           
           <!-- Done view: simple list -->
           <template v-else>
-            <div class="group-tasks">
-              <TaskItem 
-                v-for="task in store.filteredTasks" 
-                :key="task.id" 
-                :task="task"
-              />
+            <div class="space-y-3">
+              <TaskItem v-for="task in store.filteredTasks" :key="task.id" :task="task" />
             </div>
           </template>
         </div>
@@ -86,7 +88,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useTodoStore } from '@/stores/todo'
 import { formatDate } from '@/utils/date'
 import CategorySidebar from '@/components/CategorySidebar.vue'
@@ -95,7 +97,11 @@ import FiltersBar from '@/components/FiltersBar.vue'
 import TaskItem from '@/components/TaskItem.vue'
 
 const store = useTodoStore()
-const composerRef = ref<InstanceType<typeof TaskComposer>>()
+
+const currentDateFormatted = computed(() => {
+  const now = new Date()
+  return now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+})
 
 const emptyStateTitle = computed(() => {
   if (store.filter.search) return 'No matching tasks'
@@ -118,124 +124,8 @@ function getCategoryName(categoryId: string): string {
 }
 
 function getCategoryColor(categoryId: string): string {
-  if (categoryId === 'uncategorized') return '#ccc'
+  if (categoryId === 'uncategorized') return '#94a3b8'
   const category = store.categoryById.get(categoryId)
   return category?.color || '#999'
 }
 </script>
-
-<style scoped>
-.app {
-  display: flex;
-  height: 100vh;
-  background: var(--bg);
-  color: var(--text);
-}
-
-.main-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 2rem;
-}
-
-.container {
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  text-align: center;
-  color: var(--text-muted);
-}
-
-.empty-state svg {
-  margin-bottom: 1.5rem;
-  opacity: 0.5;
-}
-
-.empty-state h2 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.5rem;
-  color: var(--text);
-}
-
-.empty-state p {
-  margin: 0;
-  font-size: 1rem;
-}
-
-.task-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.task-group {
-  animation: fadeIn 0.3s;
-}
-
-.group-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--border);
-}
-
-.group-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.category-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-.group-count {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  background: var(--hover-bg);
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-}
-
-.group-tasks {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (max-width: 768px) {
-  .app {
-    flex-direction: column;
-  }
-  
-  .main-content {
-    padding: 1rem;
-  }
-}
-</style>

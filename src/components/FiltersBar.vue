@@ -1,47 +1,66 @@
 <template>
-  <div class="filters-bar">
-    <div class="tabs">
-      <button 
-        class="tab"
-        :class="{ active: store.filter.tab === 'today' }"
-        @click="store.setFilterTab('today')"
-      >
-        Today
-      </button>
-      <button 
-        class="tab"
-        :class="{ active: store.filter.tab === 'all' }"
-        @click="store.setFilterTab('all')"
-      >
-        All
-      </button>
-      <button 
-        class="tab"
-        :class="{ active: store.filter.tab === 'done' }"
-        @click="store.setFilterTab('done')"
-      >
-        Done
-      </button>
-    </div>
-    
-    <div class="filters-right">
-      <input
-        ref="searchInputRef"
-        v-model="store.filter.search"
-        type="text"
-        class="search-input"
-        placeholder="Search tasks..."
-        aria-label="Search tasks"
-      />
+  <div class="flex flex-col gap-6 mb-8">
+    <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
+      <!-- Tabs -->
+      <div class="flex gap-8">
+        <button 
+          @click="store.setFilterTab('today')"
+          :class="[
+            'pb-3 text-sm font-bold tracking-wide transition-colors',
+            store.filter.tab === 'today'
+              ? 'border-b-2 border-primary text-primary'
+              : 'border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+          ]"
+        >
+          Today
+        </button>
+        
+        <button 
+          @click="store.setFilterTab('all')"
+          :class="[
+            'pb-3 text-sm font-bold tracking-wide transition-colors',
+            store.filter.tab === 'all'
+              ? 'border-b-2 border-primary text-primary'
+              : 'border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+          ]"
+        >
+          All
+        </button>
+        
+        <button 
+          @click="store.setFilterTab('done')"
+          :class="[
+            'pb-3 text-sm font-bold tracking-wide transition-colors',
+            store.filter.tab === 'done'
+              ? 'border-b-2 border-primary text-primary'
+              : 'border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+          ]"
+        >
+          Done
+        </button>
+      </div>
       
       <button 
         v-if="hasDoneTasks"
-        class="clear-done-btn" 
         @click="handleClearDone"
-        title="Clear completed tasks"
+        class="text-xs font-bold text-slate-500 hover:text-rose-500 transition-colors uppercase tracking-widest pb-3"
       >
         Clear Done
       </button>
+    </div>
+    
+    <!-- Search -->
+    <div class="relative group">
+      <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 group-focus-within:text-primary transition-colors">
+        search
+      </span>
+      <input 
+        ref="searchInputRef"
+        v-model="store.filter.search"
+        type="text" 
+        class="w-full bg-white dark:bg-card-dark/50 border border-slate-200 dark:border-slate-800 rounded-xl py-3 pl-12 pr-4 focus:ring-1 focus:ring-primary focus:border-primary text-sm transition-all shadow-sm"
+        placeholder="Search tasks..."
+      />
     </div>
   </div>
 </template>
@@ -84,118 +103,3 @@ defineExpose({
   focusSearch: () => searchInputRef.value?.focus()
 })
 </script>
-
-<style scoped>
-.filters-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.tabs {
-  display: flex;
-  gap: 0.5rem;
-  background: var(--card-bg);
-  padding: 0.25rem;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-}
-
-.tab {
-  padding: 0.6rem 1.25rem;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.tab:hover {
-  color: var(--text);
-  background: var(--hover-bg);
-}
-
-.tab.active {
-  background: var(--primary);
-  color: white;
-}
-
-.filters-right {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.search-input {
-  padding: 0.6rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 0.9rem;
-  background: var(--input-bg);
-  color: var(--text);
-  min-width: 200px;
-  transition: all 0.2s;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-light);
-}
-
-.search-input::placeholder {
-  color: var(--text-muted);
-}
-
-.clear-done-btn {
-  padding: 0.6rem 1rem;
-  background: var(--danger-light);
-  color: var(--danger);
-  border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.clear-done-btn:hover {
-  background: var(--danger);
-  color: white;
-}
-
-@media (max-width: 768px) {
-  .filters-bar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .tabs {
-    width: 100%;
-  }
-  
-  .tab {
-    flex: 1;
-  }
-  
-  .filters-right {
-    flex-direction: column;
-  }
-  
-  .search-input {
-    width: 100%;
-    min-width: 0;
-  }
-  
-  .clear-done-btn {
-    width: 100%;
-  }
-}
-</style>

@@ -1,60 +1,88 @@
 <template>
-  <div class="task-item" :class="{ done: task.done }">
-    <input
-      type="checkbox"
-      :checked="task.done"
-      @change="store.toggleTask(task.id)"
-      class="task-checkbox"
-      :aria-label="`Mark ${task.title} as ${task.done ? 'incomplete' : 'complete'}`"
-    />
-    
-    <div class="task-content" @dblclick="startEdit">
-      <input
-        v-if="isEditing"
-        ref="editInputRef"
-        v-model="editTitle"
-        type="text"
-        class="task-edit-input"
-        @keydown.enter="saveEdit"
-        @keydown.escape="cancelEdit"
-        @blur="saveEdit"
-      />
-      <span v-else class="task-title">{{ task.title }}</span>
+  <div class="task-row flex items-center justify-between p-4 bg-white dark:bg-card-dark/40 border border-slate-200 dark:border-slate-800/50 rounded-xl hover:border-primary/30 hover:bg-white dark:hover:bg-card-dark transition-all group cursor-default">
+    <div class="flex items-center gap-4">
+      <div class="relative flex items-center justify-center w-6 h-6 rounded-md border-2 border-slate-300 dark:border-slate-700 group-hover:border-primary transition-colors cursor-pointer">
+        <input 
+          type="checkbox" 
+          :checked="task.done"
+          @change="store.toggleTask(task.id)"
+          class="opacity-0 absolute inset-0 cursor-pointer z-10"
+        />
+        <span 
+          :class="[
+            'material-symbols-outlined text-primary text-lg transition-transform',
+            task.done ? 'scale-100' : 'scale-0'
+          ]"
+        >
+          check
+        </span>
+      </div>
       
-      <div class="task-meta">
-        <span v-if="category" class="task-category">
-          <span class="category-dot" :style="{ backgroundColor: category.color }"></span>
-          {{ category.name }}
-        </span>
-        <span v-if="!isToday(task.dueDate)" class="task-date">
-          {{ formatDate(task.dueDate) }}
-        </span>
+      <div class="flex flex-col">
+        <input
+          v-if="isEditing"
+          ref="editInputRef"
+          v-model="editTitle"
+          type="text"
+          class="bg-transparent border-none focus:ring-0 p-0 text-slate-900 dark:text-slate-100 font-medium text-base"
+          @keydown.enter="saveEdit"
+          @keydown.escape="cancelEdit"
+          @blur="saveEdit"
+        />
+        <p 
+          v-else
+          @dblclick="startEdit"
+          :class="[
+            'font-medium',
+            task.done ? 'text-slate-400 line-through' : 'text-slate-900 dark:text-slate-100'
+          ]"
+        >
+          {{ task.title }}
+        </p>
+        
+        <div class="flex items-center gap-3 mt-1">
+          <span 
+            v-if="category"
+            class="text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-tight"
+            :style="{ 
+              backgroundColor: `${category.color}10`, 
+              color: category.color 
+            }"
+          >
+            {{ category.name }}
+          </span>
+          
+          <span v-if="!isToday(task.dueDate)" class="flex items-center gap-1 text-[10px] text-slate-500 font-medium">
+            <span class="material-symbols-outlined text-[12px]">calendar_today</span> 
+            {{ formatDate(task.dueDate) }}
+          </span>
+        </div>
       </div>
     </div>
     
-    <div class="task-actions">
-      <button
+    <div class="task-actions opacity-0 flex items-center gap-1 transition-opacity">
+      <button 
         v-if="!isEditing"
-        class="task-action-btn"
         @click="startEdit"
-        aria-label="Edit task"
+        class="p-2 text-slate-400 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
         title="Edit"
       >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M12.146 1.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1 0 .708l-9 9a.5.5 0 0 1-.168.11l-4 1.5a.5.5 0 0 1-.65-.65l1.5-4a.5.5 0 0 1 .11-.168l9-9zM11.5 2.5L13.5 4.5 12 6 10 4 11.5 2.5z"/>
-        </svg>
+        <span class="material-symbols-outlined text-[20px]">edit</span>
       </button>
       
-      <button
-        class="task-action-btn delete"
+      <button 
+        class="p-2 text-slate-400 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+        title="Pin"
+      >
+        <span class="material-symbols-outlined text-[20px]">push_pin</span>
+      </button>
+      
+      <button 
         @click="handleDelete"
-        aria-label="Delete task"
+        class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
         title="Delete"
       >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-          <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-        </svg>
+        <span class="material-symbols-outlined text-[20px]">delete</span>
       </button>
     </div>
   </div>
@@ -110,125 +138,3 @@ function handleDelete() {
   }
 }
 </script>
-
-<style scoped>
-.task-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 1rem;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  transition: all 0.2s;
-}
-
-.task-item:hover {
-  border-color: var(--border-hover);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.task-item.done {
-  opacity: 0.6;
-}
-
-.task-item.done .task-title {
-  text-decoration: line-through;
-  color: var(--text-muted);
-}
-
-.task-checkbox {
-  margin-top: 0.2rem;
-  width: 1.25rem;
-  height: 1.25rem;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.task-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.task-title {
-  display: block;
-  font-size: 1rem;
-  color: var(--text);
-  margin-bottom: 0.25rem;
-  word-wrap: break-word;
-}
-
-.task-edit-input {
-  width: 100%;
-  padding: 0.25rem 0.5rem;
-  border: 2px solid var(--primary);
-  border-radius: 4px;
-  font-size: 1rem;
-  background: var(--input-bg);
-  color: var(--text);
-}
-
-.task-edit-input:focus {
-  outline: none;
-}
-
-.task-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-.task-category {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.category-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.task-actions {
-  display: flex;
-  gap: 0.5rem;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.task-item:hover .task-actions {
-  opacity: 1;
-}
-
-.task-action-btn {
-  padding: 0.4rem;
-  background: transparent;
-  border: none;
-  border-radius: 4px;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.task-action-btn:hover {
-  background: var(--hover-bg);
-  color: var(--text);
-}
-
-.task-action-btn.delete:hover {
-  color: var(--danger);
-  background: var(--danger-light);
-}
-
-@media (max-width: 768px) {
-  .task-actions {
-    opacity: 1;
-  }
-}
-</style>

@@ -1,53 +1,102 @@
 <template>
-  <div class="task-composer">
-    <div class="composer-row">
-      <input
-        ref="inputRef"
-        v-model="title"
-        type="text"
-        class="task-input"
-        placeholder="Add a task... (press Enter)"
-        @keydown.enter="handleAdd"
-        @keydown.escape="handleEscape"
-      />
-      
-      <select 
-        v-model="selectedCategoryId" 
-        class="category-select"
-        aria-label="Select category"
-      >
-        <option :value="null">No category</option>
-        <option 
-          v-for="cat in store.categories" 
-          :key="cat.id" 
-          :value="cat.id"
-        >
-          {{ cat.name }}
-        </option>
-      </select>
-      
-      <button 
-        class="add-button" 
-        @click="handleAdd"
-        :disabled="!title.trim()"
-        aria-label="Add task"
-      >
-        <span class="add-icon">+</span>
-        Add
-      </button>
+  <div class="mb-10">
+    <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden focus-within:ring-2 focus-within:ring-primary/50 transition-all">
+      <div class="flex items-start p-4 gap-4">
+        <div class="mt-2 h-10 w-10 shrink-0 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700 flex items-center justify-center">
+          <span class="material-symbols-outlined text-slate-500">person</span>
+        </div>
+        
+        <div class="flex-1 flex flex-col">
+          <textarea 
+            ref="inputRef"
+            v-model="title" 
+            class="w-full bg-transparent border-none focus:ring-0 p-0 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 text-lg font-medium resize-none h-12 pt-1"
+            placeholder="What's on your mind?"
+            @keydown.enter.prevent="handleAdd"
+            @keydown.escape="handleEscape"
+          ></textarea>
+          
+          <div class="flex items-center justify-between mt-4">
+            <div class="flex items-center gap-2">
+              <div class="relative">
+                <button 
+                  @click="showCategoryPicker = !showCategoryPicker"
+                  class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <span class="material-symbols-outlined text-sm">label</span>
+                  <span class="text-xs font-bold uppercase tracking-wider">
+                    {{ selectedCategoryName }}
+                  </span>
+                </button>
+                
+                <!-- Category Picker Dropdown -->
+                <div 
+                  v-if="showCategoryPicker"
+                  class="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl z-50 py-2"
+                >
+                  <button
+                    @click="selectCategory(null)"
+                    class="w-full flex items-center gap-3 px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                    <span>No category</span>
+                  </button>
+                  <button
+                    v-for="cat in store.categories"
+                    :key="cat.id"
+                    @click="selectCategory(cat.id)"
+                    class="w-full flex items-center gap-3 px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <span class="w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: cat.color }"></span>
+                    <span>{{ cat.name }}</span>
+                  </button>
+                </div>
+              </div>
+              
+              <button class="p-1.5 text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-lg">calendar_month</span>
+              </button>
+              
+              <button class="p-1.5 text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-lg">flag</span>
+              </button>
+            </div>
+            
+            <button 
+              @click="handleAdd"
+              :disabled="!title.trim()"
+              class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg text-sm font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Add Task
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useTodoStore } from '@/stores/todo'
 import { getTodayString } from '@/utils/date'
 
 const store = useTodoStore()
 const title = ref('')
 const selectedCategoryId = ref<string | null>(store.settings.lastUsedCategoryId)
-const inputRef = ref<HTMLInputElement>()
+const inputRef = ref<HTMLTextAreaElement>()
+const showCategoryPicker = ref(false)
+
+const selectedCategoryName = computed(() => {
+  if (!selectedCategoryId.value) return 'Category'
+  const category = store.categoryById.get(selectedCategoryId.value)
+  return category?.name || 'Category'
+})
+
+function selectCategory(categoryId: string | null) {
+  selectedCategoryId.value = categoryId
+  showCategoryPicker.value = false
+}
 
 function handleAdd() {
   if (!title.value.trim()) return
@@ -55,7 +104,6 @@ function handleAdd() {
   store.addTask(title.value, selectedCategoryId.value, getTodayString())
   title.value = ''
   
-  // Update selected category for next task
   if (selectedCategoryId.value) {
     store.setLastUsedCategory(selectedCategoryId.value)
   }
@@ -66,108 +114,23 @@ function handleEscape() {
   inputRef.value?.blur()
 }
 
-// Focus input on mount
+function handleClickOutside(event: MouseEvent) {
+  const target = event.target as HTMLElement
+  if (!target.closest('.relative')) {
+    showCategoryPicker.value = false
+  }
+}
+
 onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
   inputRef.value?.focus()
 })
 
-// Export focus method for keyboard shortcuts
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
 defineExpose({
   focus: () => inputRef.value?.focus()
 })
 </script>
-
-<style scoped>
-.task-composer {
-  margin-bottom: 1.5rem;
-}
-
-.composer-row {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.task-input {
-  flex: 1;
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: all 0.2s;
-  background: var(--input-bg);
-  color: var(--text);
-}
-
-.task-input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-light);
-}
-
-.category-select {
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  font-size: 0.9rem;
-  background: var(--input-bg);
-  color: var(--text);
-  cursor: pointer;
-  transition: all 0.2s;
-  min-width: 150px;
-}
-
-.category-select:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-light);
-}
-
-.add-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.add-button:hover:not(:disabled) {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-}
-
-.add-button:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.add-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.add-icon {
-  font-size: 1.25rem;
-  line-height: 1;
-}
-
-@media (max-width: 768px) {
-  .composer-row {
-    flex-direction: column;
-  }
-  
-  .task-input,
-  .category-select,
-  .add-button {
-    width: 100%;
-  }
-}
-</style>
