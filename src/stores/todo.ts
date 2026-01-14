@@ -112,11 +112,16 @@ export const useTodoStore = defineStore('todo', () => {
 
   // Actions - Tasks
   function addTask(title: string, categoryId: string | null = null, dueDate: string = getTodayString()) {
+    // If categoryId is explicitly null, use null. Otherwise use provided categoryId or fall back to lastUsedCategoryId
+    const finalCategoryId = categoryId === null 
+      ? null 
+      : (categoryId || settings.value.lastUsedCategoryId)
+    
     const task: Task = {
       id: generateId(),
       title: title.trim(),
       done: false,
-      categoryId: categoryId || settings.value.lastUsedCategoryId,
+      categoryId: finalCategoryId,
       dueDate,
       createdAt: Date.now(),
       updatedAt: Date.now()
@@ -125,7 +130,7 @@ export const useTodoStore = defineStore('todo', () => {
     tasks.value.push(task)
     saveTasks(tasks.value)
     
-    // Update last used category
+    // Update last used category (only if a category was selected)
     if (task.categoryId) {
       settings.value.lastUsedCategoryId = task.categoryId
       saveSettings(settings.value)

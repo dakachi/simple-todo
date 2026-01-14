@@ -7,5 +7,15 @@ export default defineConfig({
     alias: {
       '@': '/src'
     }
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    // Ensure proper chunking for Cloudflare
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
+    }
   }
 })

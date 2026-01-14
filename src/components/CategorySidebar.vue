@@ -1,11 +1,12 @@
 <template>
+  <!-- Match sample SideNavBar markup/classes -->
   <aside class="w-64 flex flex-col bg-sidebar-dark border-r border-slate-800 shrink-0">
     <div class="p-6 flex flex-col h-full">
       <!-- Brand & Global Count -->
       <div class="mb-8">
         <div class="flex items-center gap-2 mb-1">
           <span class="material-symbols-outlined text-primary text-3xl">check_circle</span>
-          <h1 class="text-white text-xl font-bold tracking-tight">Todo.netlyze</h1>
+          <h1 class="text-white text-xl font-bold tracking-tight">Starporter.dev</h1>
         </div>
         <div class="flex items-center gap-2 px-1">
           <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
@@ -14,164 +15,76 @@
           </p>
         </div>
       </div>
-      
+
       <!-- Main Navigation -->
       <nav class="flex flex-col gap-1 mb-8">
-        <button 
+        <div
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors"
+          :class="store.filter.tab === 'today'
+            ? 'bg-primary/10 text-primary border border-primary/20'
+            : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'"
           @click="store.setFilterTab('today')"
-          :class="[
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors',
-            store.filter.tab === 'today' 
-              ? 'bg-primary/10 text-primary border border-primary/20' 
-              : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
-          ]"
         >
           <span class="material-symbols-outlined text-[22px]">calendar_today</span>
-          <p>Today</p>
-        </button>
-        
-        <button 
+          <p class="text-sm font-semibold">Today</p>
+        </div>
+        <div
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors"
+          :class="store.filter.tab === 'all'
+            ? 'bg-primary/10 text-primary border border-primary/20'
+            : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'"
           @click="store.setFilterTab('all')"
-          :class="[
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-            store.filter.tab === 'all' 
-              ? 'bg-primary/10 text-primary border border-primary/20' 
-              : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
-          ]"
         >
           <span class="material-symbols-outlined text-[22px]">upcoming</span>
-          <p>Upcoming</p>
-        </button>
-        
-        <button 
+          <p class="text-sm font-medium">Upcoming</p>
+        </div>
+        <div
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors"
+          :class="store.filter.tab === 'done'
+            ? 'bg-primary/10 text-primary border border-primary/20'
+            : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'"
           @click="store.setFilterTab('done')"
-          :class="[
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-            store.filter.tab === 'done' 
-              ? 'bg-primary/10 text-primary border border-primary/20' 
-              : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
-          ]"
         >
           <span class="material-symbols-outlined text-[22px]">inventory_2</span>
-          <p>Archive</p>
-        </button>
+          <p class="text-sm font-medium">Archive</p>
+        </div>
       </nav>
-      
+
       <!-- Categories -->
       <div class="flex flex-col gap-2">
-        <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
-          Categories
-        </p>
-        
-        <button 
-          @click="store.setFilterCategory(null)"
-          :class="[
-            'flex items-center justify-between px-3 py-2 rounded-lg transition-colors',
-            store.filter.categoryId === null 
-              ? 'bg-slate-800/50' 
-              : 'hover:bg-slate-800/30'
-          ]"
-        >
-          <div class="flex items-center gap-3">
-            <span class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
-            <p class="text-slate-300 text-sm font-medium">All categories</p>
-          </div>
-          <span class="text-[10px] text-slate-600 font-bold group-hover:text-slate-400">
-            {{ allTasksCount }}
-          </span>
-        </button>
-        
-        <button
+        <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Categories</p>
+
+        <div
           v-for="cat in store.categories"
           :key="cat.id"
-          @click="store.setFilterCategory(cat.id)"
-          :class="[
-            'flex items-center justify-between px-3 py-2 group rounded-lg transition-colors',
-            store.filter.categoryId === cat.id 
-              ? 'bg-slate-800/50' 
-              : 'hover:bg-slate-800/30'
-          ]"
+          class="flex items-center justify-between px-3 py-2 group cursor-pointer hover:bg-slate-800/30 rounded-lg"
+          @click="selectCategoryForTask(cat.id)"
         >
           <div class="flex items-center gap-3">
-            <span class="w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: cat.color }"></span>
+            <span
+              class="w-2.5 h-2.5 rounded-full"
+              :class="categoryDotClass(cat.color)"
+              :style="categoryDotStyle(cat.color)"
+            ></span>
             <p class="text-slate-300 text-sm font-medium">{{ cat.name }}</p>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="text-[10px] text-slate-600 font-bold group-hover:text-slate-400">
-              {{ getCategoryCount(cat.id) }}
-            </span>
-            <div class="hidden group-hover:flex items-center gap-1">
-              <button 
-                @click.stop="editCategory(cat)"
-                class="p-1 text-slate-500 hover:text-slate-300 transition-colors"
-                title="Edit"
-              >
-                <span class="material-symbols-outlined text-[14px]">edit</span>
-              </button>
-              <button 
-                @click.stop="deleteCategory(cat.id, cat.name)"
-                class="p-1 text-slate-500 hover:text-rose-400 transition-colors"
-                title="Delete"
-              >
-                <span class="material-symbols-outlined text-[14px]">delete</span>
-              </button>
-            </div>
-          </div>
-        </button>
-        
-        <button 
-          @click="store.setFilterCategory('uncategorized')"
-          :class="[
-            'flex items-center justify-between px-3 py-2 rounded-lg transition-colors',
-            store.filter.categoryId === 'uncategorized' 
-              ? 'bg-slate-800/50' 
-              : 'hover:bg-slate-800/30'
-          ]"
-        >
-          <div class="flex items-center gap-3">
-            <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
-            <p class="text-slate-300 text-sm font-medium">Uncategorized</p>
-          </div>
-          <span class="text-[10px] text-slate-600 font-bold group-hover:text-slate-400">
-            {{ uncategorizedCount }}
-          </span>
-        </button>
+          <span class="text-[10px] text-slate-600 font-bold group-hover:text-slate-400">{{ getCategoryCount(cat.id) }}</span>
+        </div>
       </div>
-      
+
       <!-- Footer Actions -->
       <div class="mt-auto pt-6 flex flex-col gap-3">
-        <button 
-          @click="showNewCategoryForm = true"
+        <button
           class="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 bg-slate-800 text-white text-sm font-bold hover:bg-slate-700 transition-colors"
+          @click="showNewCategoryForm = true"
         >
           <span class="material-symbols-outlined text-sm">add</span>
           <span>New Category</span>
         </button>
-        
-        <div class="flex items-center gap-2">
-          <button 
-            @click="handleExport"
-            class="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-slate-400 hover:text-white transition-colors"
-            title="Export"
-          >
-            <span class="material-symbols-outlined text-[20px]">download</span>
-          </button>
-          <button 
-            @click="triggerImport"
-            class="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-slate-400 hover:text-white transition-colors"
-            title="Import"
-          >
-            <span class="material-symbols-outlined text-[20px]">upload</span>
-          </button>
-          <button 
-            @click="store.toggleDarkMode"
-            class="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-slate-400 hover:text-white transition-colors"
-            :title="`Switch to ${store.settings.darkMode ? 'light' : 'dark'} mode`"
-          >
-            <span class="material-symbols-outlined text-[20px]">
-              {{ store.settings.darkMode ? 'light_mode' : 'dark_mode' }}
-            </span>
-          </button>
+
+        <div class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-white cursor-pointer" @click="showSettings = true">
+          <span class="material-symbols-outlined text-[20px]">settings</span>
+          <p class="text-sm font-medium">Settings</p>
         </div>
       </div>
     </div>
@@ -184,6 +97,37 @@
       @change="handleImport"
     />
   </aside>
+
+  <!-- Settings (minimal, keeps extra actions without changing sidebar layout) -->
+  <teleport to="body">
+    <div v-if="showSettings" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" style="z-index: 9999;" @click="showSettings = false">
+      <div class="relative w-full max-w-[520px] bg-white dark:bg-surface-dark rounded-xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800" @click.stop>
+        <div class="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-slate-800">
+          <h2 class="text-xl font-bold tracking-tight">Settings</h2>
+          <button class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors" @click="showSettings = false">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div class="p-6 space-y-3 bg-slate-50 dark:bg-accent-dark/30">
+          <button class="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-white/70 dark:bg-background-dark/50 border border-slate-200 dark:border-slate-700 hover:border-primary/40 transition-colors" @click="handleExport">
+            <span class="text-sm font-semibold">Export JSON</span>
+            <span class="material-symbols-outlined text-slate-400">download</span>
+          </button>
+          <button class="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-white/70 dark:bg-background-dark/50 border border-slate-200 dark:border-slate-700 hover:border-primary/40 transition-colors" @click="triggerImport">
+            <span class="text-sm font-semibold">Import JSON</span>
+            <span class="material-symbols-outlined text-slate-400">upload</span>
+          </button>
+          <button class="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-white/70 dark:bg-background-dark/50 border border-slate-200 dark:border-slate-700 hover:border-primary/40 transition-colors" @click="store.toggleDarkMode">
+            <span class="text-sm font-semibold">{{ store.settings.darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode' }}</span>
+            <span class="material-symbols-outlined text-slate-400">{{ store.settings.darkMode ? 'light_mode' : 'dark_mode' }}</span>
+          </button>
+        </div>
+        <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-surface-dark">
+          <button class="px-5 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-accent-dark rounded-lg transition-colors" @click="showSettings = false">Close</button>
+        </div>
+      </div>
+    </div>
+  </teleport>
   
   <!-- Category Management Modal -->
   <teleport to="body">
@@ -402,6 +346,7 @@ import { exportData, importData } from '@/utils/storage'
 const store = useTodoStore()
 
 const showNewCategoryForm = ref(false)
+const showSettings = ref(false)
 const newCategoryName = ref('')
 const newCategoryColor = ref('#3b82f6')
 const newCategoryInputRef = ref<HTMLInputElement>()
@@ -432,8 +377,36 @@ const uncategorizedCount = computed(() => {
   return store.tasks.filter(t => t.categoryId === null).length
 })
 
+function categoryDotClass(color: string): string {
+  const c = color.toLowerCase()
+  const map: Record<string, string> = {
+    '#3b82f6': 'bg-blue-500',
+    '#ee8c2b': 'bg-primary',
+    '#14b8a6': 'bg-teal-500',
+    '#10b981': 'bg-emerald-500',
+    '#f43f5e': 'bg-rose-500',
+    '#6366f1': 'bg-indigo-500',
+    '#06b6d4': 'bg-cyan-500',
+    '#eab308': 'bg-yellow-500',
+    '#a855f7': 'bg-purple-500',
+    '#ec4899': 'bg-pink-500',
+  }
+  return map[c] || ''
+}
+
+function categoryDotStyle(color: string): Record<string, string> {
+  return categoryDotClass(color) ? {} : { backgroundColor: color }
+}
+
 function getCategoryCount(categoryId: string): number {
   return store.tasks.filter(t => t.categoryId === categoryId).length
+}
+
+function selectCategoryForTask(categoryId: string) {
+  // Set filter to show tasks in this category
+  store.setFilterCategory(categoryId)
+  // Also select this category for task creation
+  store.setLastUsedCategory(categoryId)
 }
 
 function closeNewCategoryForm() {
@@ -489,7 +462,7 @@ function handleExport() {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `netlyze-todo-backup-${Date.now()}.json`
+  a.download = `starporter-todo-backup-${Date.now()}.json`
   a.click()
   URL.revokeObjectURL(url)
 }

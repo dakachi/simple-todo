@@ -1,12 +1,13 @@
 {
-  "name": "netlyze-todo",
+  "name": "starporter-todo",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "build:check": "vue-tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy:cloudflare": "npm run build && wrangler pages deploy dist"
   },
   "dependencies": {
     "pinia": "^2.1.7",

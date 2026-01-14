@@ -1,6 +1,6 @@
 <template>
   <div class="mb-10">
-    <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden focus-within:ring-2 focus-within:ring-primary/50 transition-all">
+    <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl focus-within:ring-2 focus-within:ring-primary/50 transition-all">
       <div class="flex items-start p-4 gap-4">
         <div class="mt-2 h-10 w-10 shrink-0 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700 flex items-center justify-center">
           <span class="material-symbols-outlined text-slate-500">person</span>
@@ -18,9 +18,11 @@
           
           <div class="flex items-center justify-between mt-4">
             <div class="flex items-center gap-2">
-              <div class="relative">
+              <div class="relative" ref="categoryPickerRef">
                 <button 
-                  @click="showCategoryPicker = !showCategoryPicker"
+                  type="button"
+                  @click="toggleCategoryPicker"
+                  @mousedown.stop
                   class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                 >
                   <span class="material-symbols-outlined text-sm">label</span>
@@ -32,25 +34,28 @@
                 <!-- Category Picker Dropdown -->
                 <div 
                   v-if="showCategoryPicker"
-                  class="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl z-50 py-2"
+                  @click.stop
+                  class="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl z-[100] py-2"
                 >
-                  <button
-                    @click="selectCategory(null)"
-                    class="w-full flex items-center gap-3 px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                  >
-                    <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-                    <span>No category</span>
-                  </button>
-                  <button
-                    v-for="cat in store.categories"
-                    :key="cat.id"
-                    @click="selectCategory(cat.id)"
-                    class="w-full flex items-center gap-3 px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                  >
-                    <span class="w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: cat.color }"></span>
-                    <span>{{ cat.name }}</span>
-                  </button>
-                </div>
+                    <button
+                      type="button"
+                      @click.stop="selectCategory(null)"
+                      class="w-full flex items-center gap-3 px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    >
+                      <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                      <span>No category</span>
+                    </button>
+                    <button
+                      v-for="cat in store.categories"
+                      :key="cat.id"
+                      type="button"
+                      @click.stop="selectCategory(cat.id)"
+                      class="w-full flex items-center gap-3 px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    >
+                      <span class="w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: cat.color }"></span>
+                      <span>{{ cat.name }}</span>
+                    </button>
+                  </div>
               </div>
               
               <button class="p-1.5 text-slate-400 hover:text-primary transition-colors">
@@ -77,7 +82,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useTodoStore } from '@/stores/todo'
 import { getTodayString } from '@/utils/date'
 
@@ -85,13 +90,23 @@ const store = useTodoStore()
 const title = ref('')
 const selectedCategoryId = ref<string | null>(store.settings.lastUsedCategoryId)
 const inputRef = ref<HTMLTextAreaElement>()
+const categoryPickerRef = ref<HTMLDivElement>()
 const showCategoryPicker = ref(false)
 
+// Watch for changes to lastUsedCategoryId from sidebar selection
+watch(() => store.settings.lastUsedCategoryId, (newCategoryId) => {
+  selectedCategoryId.value = newCategoryId
+})
+
 const selectedCategoryName = computed(() => {
-  if (!selectedCategoryId.value) return 'Category'
+  if (selectedCategoryId.value === null) return 'Category'
   const category = store.categoryById.get(selectedCategoryId.value)
   return category?.name || 'Category'
 })
+
+function toggleCategoryPicker() {
+  showCategoryPicker.value = !showCategoryPicker.value
+}
 
 function selectCategory(categoryId: string | null) {
   selectedCategoryId.value = categoryId
@@ -101,9 +116,13 @@ function selectCategory(categoryId: string | null) {
 function handleAdd() {
   if (!title.value.trim()) return
   
+  // Pass the selected category (can be null for "No category")
   store.addTask(title.value, selectedCategoryId.value, getTodayString())
+  
+  // Clear only the title, keep the selected category for next task
   title.value = ''
   
+  // Update last used category in settings (only if a category was selected)
   if (selectedCategoryId.value) {
     store.setLastUsedCategory(selectedCategoryId.value)
   }
@@ -115,14 +134,20 @@ function handleEscape() {
 }
 
 function handleClickOutside(event: MouseEvent) {
+  if (!showCategoryPicker.value) return
+  
   const target = event.target as HTMLElement
-  if (!target.closest('.relative')) {
+  // Check if click is outside the category picker container
+  if (categoryPickerRef.value && !categoryPickerRef.value.contains(target)) {
     showCategoryPicker.value = false
   }
 }
 
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
+  // Delay adding the listener to avoid conflicts
+  setTimeout(() => {
+    document.addEventListener('click', handleClickOutside)
+  }, 200)
   inputRef.value?.focus()
 })
 

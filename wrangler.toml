@@ -1,0 +1,11 @@
+# Cloudflare Pages configuration
+# For Cloudflare Pages, this file is optional but can be used for advanced settings
+
+name = "starporter-todo"
+compatibility_date = "2024-01-01"
+
+[env.production]
+name = "starporter-todo"
+
+# Pages configuration
+pages_build_output_dir = "dist"
