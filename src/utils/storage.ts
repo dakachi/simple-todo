@@ -1,8 +1,8 @@
 import type { Task, Category, Settings } from '@/types'
 
-const TASKS_KEY = 'netlyze.todo.tasks.v1'
-const CATEGORIES_KEY = 'netlyze.todo.categories.v1'
-const SETTINGS_KEY = 'netlyze.todo.settings.v1'
+const TASKS_KEY = 'starporter.todo.tasks.v1'
+const CATEGORIES_KEY = 'starporter.todo.categories.v1'
+const SETTINGS_KEY = 'starporter.todo.settings.v1'
 
 let writeTimeout: number | null = null
 const DEBOUNCE_DELAY = 250

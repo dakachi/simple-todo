@@ -98,9 +98,9 @@ src/
 ## Data Storage
 
 All data is stored in localStorage under these keys:
-- `netlyze.todo.tasks.v1` - All tasks
-- `netlyze.todo.categories.v1` - All categories
-- `netlyze.todo.settings.v1` - User preferences
+- `starporter.todo.tasks.v1` - All tasks
+- `starporter.todo.categories.v1` - All categories
+- `starporter.todo.settings.v1` - User preferences
 
 The app validates data on load and handles corrupted data gracefully by resetting to defaults.
 
